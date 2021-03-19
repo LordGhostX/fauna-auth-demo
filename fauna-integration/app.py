@@ -68,6 +68,9 @@ def register():
 
 @app.route("/login/", methods=["GET", "POST"])
 def login():
+    if "user_secret" in session:
+        return redirect(url_for("dashboard"))
+
     if request.method == "POST":
         email = request.form.get("email").strip().lower()
         password = request.form.get("password")
@@ -123,14 +126,11 @@ def dashboard(user):
             "You have successfully changed your account password!", "success")
         return redirect(url_for("dashboard"))
 
-    try:
-        user_details = client.query(
-            q.get(
-                q.ref(q.collection("users"), user.id())
-            )
+    user_details = client.query(
+        q.get(
+            q.ref(q.collection("users"), user.id())
         )
-    except BadRequest as e:
-        return redirect(url_for("logout", logout_type="current"))
+    )
 
     return render_template("dashboard.html", user_details=user_details)
 
@@ -143,15 +143,12 @@ def logout(user, logout_type):
     else:
         all_tokens = False
 
-    try:
-        user_client = FaunaClient(secret=session["user_secret"])
-        result = user_client.query(
-            q.logout(all_tokens)
-        )
-    except BadRequest as e:
-        pass
-
+    user_client = FaunaClient(secret=session["user_secret"])
+    result = user_client.query(
+        q.logout(all_tokens)
+    )
     session.clear()
+
     return redirect(url_for("index"))
 
 
