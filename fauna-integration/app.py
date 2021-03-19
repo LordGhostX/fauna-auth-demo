@@ -48,6 +48,25 @@ def register():
 
 @app.route("/login/", methods=["GET", "POST"])
 def login():
+    if request.method == "POST":
+        email = request.form.get("email").strip().lower()
+        password = request.form.get("password")
+
+        try:
+            result = client.query(
+                q.login(
+                    q.match(q.index("users_by_email"), email), {
+                        "password": password}
+                )
+            )
+        except BadRequest as e:
+            flash(
+                "You have supplied invalid login credentials, please try again!", "danger")
+            return redirect(url_for("login"))
+
+        session["user_secret"] = result["secret"]
+        return redirect(url_for("dashboard"))
+
     return render_template("login.html")
 
 
