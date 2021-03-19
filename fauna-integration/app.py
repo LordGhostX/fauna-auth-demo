@@ -9,7 +9,7 @@ from faunadb.errors import BadRequest, Unauthorized
 app = Flask(__name__)
 Bootstrap(app)
 app.config["SECRET_KEY"] = "APP_SECRET_KEY"
-client = FaunaClient(secret="fnAEEmRX2dACBZAC9gXCXZLbMPPcCMQL7ut1-sH8")
+client = FaunaClient(secret="YOUR-SECRET-HERE")
 
 
 def login_required(f):
