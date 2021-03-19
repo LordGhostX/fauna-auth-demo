@@ -93,6 +93,36 @@ def login():
 @app.route("/dashboard/", methods=["GET", "POST"])
 @login_required
 def dashboard(user):
+    if request.method == "POST":
+        old_password = request.form.get("old-password").strip()
+        new_password = request.form.get("new-password").strip()
+
+        try:
+            result = client.query(
+                q.identify(
+                    q.ref(q.collection("users"), user.id()), old_password
+                )
+            )
+
+            if not result:
+                raise Exception()
+
+            result = client.query(
+                q.update(
+                    q.ref(q.collection("users"), user.id()), {
+                        "credentials": {"password": new_password}
+                    }
+                )
+            )
+        except Exception as e:
+            flash(
+                "You have supplied an invalid password!", "danger")
+            return redirect(url_for("dashboard"))
+
+        flash(
+            "You have successfully changed your account password!", "success")
+        return redirect(url_for("dashboard"))
+
     try:
         user_details = client.query(
             q.get(
