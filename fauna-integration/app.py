@@ -26,7 +26,7 @@ def login_required(f):
                 return redirect(url_for("login"))
         else:
             return redirect(url_for("login"))
-        return f(*args, **kwargs)
+        return f(result, *args, **kwargs)
 
     return decorated
 
@@ -90,10 +90,19 @@ def login():
     return render_template("login.html")
 
 
-@app.route("/dashboard/")
+@app.route("/dashboard/", methods=["GET", "POST"])
 @login_required
-def dashboard():
-    return render_template("dashboard.html")
+def dashboard(user):
+    try:
+        user_details = client.query(
+            q.get(
+                q.ref(q.collection("users"), user.id())
+            )
+        )
+    except BadRequest as e:
+        return redirect(url_for("logout", logout_type="current"))
+
+    return render_template("dashboard.html", user_details=user_details)
 
 
 @app.route("/dashboard/logout/<string:logout_type>/")
