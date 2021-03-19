@@ -1,14 +1,34 @@
+from functools import wraps
 from flask import *
 from flask_bootstrap import Bootstrap
 from faunadb import query as q
 from faunadb.objects import Ref
 from faunadb.client import FaunaClient
-from faunadb.errors import BadRequest
+from faunadb.errors import BadRequest, Unauthorized
 
 app = Flask(__name__)
 Bootstrap(app)
 app.config["SECRET_KEY"] = "APP_SECRET_KEY"
 client = FaunaClient(secret="fnAEEmRX2dACBZAC9gXCXZLbMPPcCMQL7ut1-sH8")
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user_secret" in session:
+            try:
+                user_client = FaunaClient(secret=session["user_secret"])
+                result = user_client.query(
+                    q.current_identity()
+                )
+            except Unauthorized as e:
+                session.clear()
+                return redirect(url_for("login"))
+        else:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+
+    return decorated
 
 
 @app.route("/")
@@ -71,6 +91,7 @@ def login():
 
 
 @app.route("/dashboard/")
+@login_required
 def dashboard():
     return render_template("dashboard.html")
 
