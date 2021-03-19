@@ -136,7 +136,22 @@ def dashboard(user):
 
 
 @app.route("/dashboard/logout/<string:logout_type>/")
-def logout(logout_type):
+@login_required
+def logout(user, logout_type):
+    if logout_type == "all":
+        all_tokens = True
+    else:
+        all_tokens = False
+
+    try:
+        user_client = FaunaClient(secret=session["user_secret"])
+        result = user_client.query(
+            q.logout(all_tokens)
+        )
+    except BadRequest as e:
+        pass
+
+    session.clear()
     return redirect(url_for("index"))
 
 
