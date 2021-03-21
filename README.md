@@ -9,3 +9,5 @@ The `fauna-integration` directory contains the full application (Fauna + Flask) 
 You can also check [this gist](https://gist.github.com/LordGhostX/9d70357f9803904506939ab6f4bb3a9a) that implements Fauna's user authentication in Python.
 
 The tutorial for this repository exists on [Dev.to](https://dev.to/LordGhostX/)
+
+![demo preview](preview.png)
